@@ -36,7 +36,7 @@ MAC 地址是游戏通过 `XNetGetTitleXnAddr()` 取到的 `abEnet`，**不一�
 
 ## 下载
 
-- **Windows**：[`bin/DOA2U-Save-Transfer.exe`](bin/DOA2U-Save-Transfer.exe)。单文件，带界面，不用安装。
+- **Windows**：[`bin/DOA2U-Save-Transfer.exe`](bin/DOA2U-Save-Transfer.exe)。单文件，带界面，不用安装。v1.1：支持高 DPI 缩放，界面有中文和英文，右下角按钮切换（也可用 `--en` / `--zh` 参数启动；默认跟随系统语言）。
 - **所有系统**：[`doau_transfer.py`](doau_transfer.py)。只需要 Python 3，负责验证和转换（需要已知 MAC）。
 - **macOS / Linux 搜 MAC**：用 C 源码编译命令行工具（见下文）。
 
@@ -52,7 +52,7 @@ MAC 地址是游戏通过 `XNetGetTitleXnAddr()` 取到的 `abEnet`，**不一�
 
 1. **① 源存档**：选择要迁移的 `ups.dat`。
    - 知道源主机 MAC 就直接填。
-   - 不知道就点「从源存档搜索 MAC」。前缀默认 `00:50:F2`，原版 Xbox 和 xemu 基本都是这个。
+   - 不知道就点「从源存档搜索 MAC」（英文界面：Find MAC from source）。前缀默认 `00:50:F2`，原版 Xbox 和 xemu 基本都是这个。
 2. **② 目标主机**：填 HD Key。
    - 在「参考 ups.dat」选目标主机上新建档案的 `ups.dat`，点「从参考存档搜索 MAC」。前缀留空时会用「目标主机 MAC」一栏的前 3 字节，可以先填系统设置里显示的 MAC。
 3. 点「**验证**」。确认 HD Key 和两个 MAC 都显示 ✓。
@@ -112,6 +112,6 @@ Most save resigners only fix the signature. DOA Ultimate's `ups.dat` is bound to
 
 The MAC is whatever the game gets from `XNetGetTitleXnAddr()`. On Xbox 360 this can differ from the MAC shown in system settings, so the reliable way is to create a new profile on the target console and brute-force the MAC from its `ups.dat` (16.7M candidates per OUI prefix, a few minutes in C).
 
-**Usage:** Windows GUI `bin/DOA2U-Save-Transfer.exe`, cross-platform `doau_transfer.py` (verify/convert with known MACs), or build `src/cli.c` for MAC search on macOS/Linux. Always copy the **whole** save folder into `UDATA/54430006/`, not just `ups.dat`.
+**Usage:** Windows GUI `bin/DOA2U-Save-Transfer.exe` (v1.1: DPI-aware, English/Chinese UI, toggle button or `--en` / `--zh`), cross-platform `doau_transfer.py` (verify/convert with known MACs), or build `src/cli.c` for MAC search on macOS/Linux. Always copy the **whole** save folder into `UDATA/54430006/`, not just `ups.dat`.
 
 Tested: xemu → Xbox 360 backward compatibility.
