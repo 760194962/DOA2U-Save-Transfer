@@ -33,7 +33,7 @@ Move Dead or Alive Ultimate (Original Xbox, TitleID `54430006`) profile saves (`
 
 需要准备：源存档整个文件夹；目标主机的 XboxHDKey；目标主机上新建的一个档案的 `ups.dat`（用来找出游戏读到的 MAC 并验证 HD Key）。
 
-1. ① 选源 `ups.dat`。知道源主机 MAC 就填；不知道就点「从源存档搜索 MAC」（原版 Xbox / xemu 前缀一般是 `00:50:F2`）。
+1. ① 选源 `ups.dat`。知道源主机 MAC 就填；不知道就点「从源存档搜索 MAC」（默认前缀 `00:50:F2` 是 Microsoft 的 OUI，我们的 xemu 存档实测是这个前缀；搜不到就换成源主机设置里显示的 MAC 的前 3 字节）。
 2. ② 填目标 HD Key；选目标主机新建档案的 `ups.dat` 作参考，点「从参考存档搜索 MAC」。
 3. 点「验证」，确认都是 ✓。
 4. 点「转换并保存…」，覆盖到源存档文件夹里的 `ups.dat`。
@@ -83,7 +83,7 @@ x86_64-w64-mingw32-gcc -O2 -municode -mwindows -static -o DOA2U-Save-Transfer.ex
 
 **Usage**
 
-1. Pick the source `ups.dat`. Enter its console MAC, or click *Find MAC from source* (Xbox / xemu usually start with `00:50:F2`).
+1. Pick the source `ups.dat`. Enter its console MAC, or click *Find MAC from source* (default prefix `00:50:F2` is Microsoft's OUI and matched our xemu save; if nothing is found, try the first 3 bytes of the MAC shown in the source console's settings).
 2. Enter the target console's XboxHDKey. Create a new profile on the target console, pick its `ups.dat` as *Reference*, and click *Find MAC from reference*.
 3. Click *Verify* until everything shows ✓, then *Convert & Save…*.
 4. Copy the **whole** save folder into `UDATA/54430006/` on the target.
