@@ -104,11 +104,12 @@ x86_64-w64-mingw32-gcc -O2 -municode -mwindows -static -o DOA2U-Save-Transfer.ex
 
 ## English
 
-Most save resigners only fix the signature. DOA Ultimate's `ups.dat` is bound to the console in **three** places, so a resigned-only save shows "user profile is corrupted":
+Most save resigners only fix the signature. DOA Ultimate's `ups.dat` is bound to the console in **at least three** places, so a resigned-only save shows "user profile is corrupted":
 
 1. `0x00–0x13`: non-roamable XCalculateSignature (title key + **XboxHDKey**).
 2. `0x18–`: payload encrypted with the console's **Ethernet MAC**. The MAC is seeded, together with the 4-byte seed at `0x14`, into MT19937 via `init_by_array([seed, mac[0..3], mac[4..5]])`. The first 14 outputs form a 56-byte Blowfish key; the rest are XORed with the data, then it is Blowfish-ECB decrypted (blocks as two little-endian uint32). The plaintext ends with `"Lightning Offering Guy\0"`.
 3. Decrypted offset `0xB1E9`: the creator's **MAC** again, in plain text, followed by an 8-byte creation timestamp.
+4. You probably also need to keep the folder name in correspond with the save data.
 
 The MAC is whatever the game gets from `XNetGetTitleXnAddr()`. On Xbox 360 this can differ from the MAC shown in system settings, so the reliable way is to create a new profile on the target console and brute-force the MAC from its `ups.dat` (16.7M candidates per OUI prefix, a few minutes in C).
 
