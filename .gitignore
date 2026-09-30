@@ -1,0 +1,6 @@
+*.res
+*.o
+*.dat
+*.sav
+doau-search
+__pycache__/

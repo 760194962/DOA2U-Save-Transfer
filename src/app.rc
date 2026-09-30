@@ -1,0 +1,9 @@
+#include <winuser.h>
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "app.manifest"
+1 VERSIONINFO FILEVERSION 1,0,0,0 PRODUCTVERSION 1,0,0,0
+BEGIN BLOCK "StringFileInfo" BEGIN BLOCK "040904b0" BEGIN
+ VALUE "FileDescription", "DOA2U Save Transfer"
+ VALUE "ProductName", "DOA2U Save Transfer"
+ VALUE "FileVersion", "1.0.0"
+END END
+BLOCK "VarFileInfo" BEGIN VALUE "Translation", 0x409, 1200 END END
