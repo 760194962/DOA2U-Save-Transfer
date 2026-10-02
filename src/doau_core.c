@@ -154,3 +154,12 @@ int ups_transfer(const uint8_t *src,const uint8_t smac[6],const uint8_t dmac[6],
     sig_nonroamable(out+20,UPS_SIZE-20,hd,out);
     return 0;
 }
+
+void save_folder_name(const uint16_t *name,int n,int add_zwsp,char out[13]){
+    const uint64_t P=((uint64_t)1<<48)-59;
+    uint64_t h=0; int i;
+    for(i=0;i<n;i++) h=((h<<16)|name[i])%P;      /* h < 2^48, so h<<16 fits in 64 bits */
+    if(add_zwsp) h=((h<<16)|0x200B)%P;
+    for(i=0;i<12;i++) out[11-i]="0123456789ABCDEF"[(h>>(4*i))&0xF];
+    out[12]=0;
+}

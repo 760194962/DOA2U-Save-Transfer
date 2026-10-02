@@ -49,4 +49,9 @@ int  ups_transfer(const uint8_t *src, const uint8_t src_mac[6],
                   const uint8_t dst_mac[6], const uint8_t dst_hdkey[16], uint8_t *out,
                   uint8_t embedded_mac_out[6]);
 
+/* XAPI save folder name from the save name (DOA2.xbe 0x2b9d02):
+   h = (h<<16 | c) mod (2^48-59) over UTF-16 units; out = 12 uppercase hex digits.
+   DOA profile names are stored in SaveMeta.xbx with a trailing U+200B; pass add_zwsp=1 for those. */
+void save_folder_name(const uint16_t *name, int n, int add_zwsp, char out[13]);
+
 #endif
