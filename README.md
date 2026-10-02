@@ -70,6 +70,30 @@ x86_64-w64-mingw32-gcc -O2 -municode -mwindows -static -o DOA2U-Save-Transfer.ex
     src/gui.c src/doau_core.c src/bf_tables.c src/app.res -lcomctl32 -lcomdlg32
 ```
 
+### 存档文件夹名
+
+存档文件夹名（如 `1210DD1B1F0C`）由存档名（`SaveMeta.xbx` 里 `Name=` 后面的文字）算出来，算法来自 `DOA2.xbe`（XDK 5849，函数地址 `0x2b9d02`）：
+
+```
+h = 0
+对名字的每个 UTF-16 字符 c：  h = (h × 0x10000 + c) mod (2^48 − 59)
+文件夹名 = h 的 12 位大写十六进制
+```
+
+`SaveMeta.xbx` 里的档案名末尾带一个零宽空格 U+200B，它也参与计算。已用 4 个游戏自己生成的 DOA 档案核对（`プレイヤー1`、`プレイヤー2`、`Xbox360Jeremy`、`プレイヤー1Ö`），文件夹名全部一致。算法只用到存档名，和 HD Key、MAC 无关。
+
+```
+python doau_transfer.py foldername "Xbox360Jeremy" --zwsp
+python doau_transfer.py foldername 存档文件夹/SaveMeta.xbx      # 同时检查文件夹名是否一致
+```
+
+**已实测**（Xbox 360 向下兼容）：
+- 只改 `ups.dat` 里的档案名、不改 `SaveMeta.xbx`，游戏读档会报错：`ups.dat` 里的档案名要和 `SaveMeta.xbx` 的 `Name=` 一致。检查过的那个档案里，`ups.dat` 内的名字末尾没有 U+200B，`SaveMeta.xbx` 里有。
+- 给 DOA 档案改名（`ups.dat` 里的名字、`SaveMeta.xbx` 的 `Name=`、按上面算法算出的文件夹名三处一起改，`ups.dat` 用原 MAC 重新加密、用目标 HD Key 重签），游戏能读出来（新 KV 下测试）。
+- 文件夹名和存档名对不上时（把改了名的 `SaveMeta.xbx` 和 `ups.dat` 放进别的名字的文件夹），游戏的档案列表里仍会显示新名字。
+
+**未测试：** 改名后的存档能否正常再保存；两个存档同名时游戏的行为；文件夹名对不上时能否读档、存档。
+
 ### 其他
 
 - `doasave.sav`、`br.dat` 用漫游签名，不绑定主机，可直接拷贝。
@@ -88,6 +112,30 @@ x86_64-w64-mingw32-gcc -O2 -municode -mwindows -static -o DOA2U-Save-Transfer.ex
 4. Copy the **whole** save folder into `UDATA/54430006/` on the target.
 
 Cross-platform: `python doau_transfer.py convert src out --src-mac .. --dst-mac .. --hdkey ..`. MAC search on macOS/Linux: build `src/cli.c`.
+
+**Save folder name**
+
+The save folder name (e.g. `1210DD1B1F0C`) is derived from the save name (the text after `Name=` in `SaveMeta.xbx`). Algorithm, read from `DOA2.xbe` (XDK 5849, function at `0x2b9d02`):
+
+```
+h = 0
+for each UTF-16 code unit c of the name:  h = (h * 0x10000 + c) mod (2^48 - 59)
+folder = 12 uppercase hex digits of h
+```
+
+The profile name in `SaveMeta.xbx` ends with U+200B (zero-width space), which is part of the hash. Checked against 4 profiles created by the game (`プレイヤー1`, `プレイヤー2`, `Xbox360Jeremy`, `プレイヤー1Ö`); the folder names all match. The algorithm uses only the name, not the HD key or MAC.
+
+```
+python doau_transfer.py foldername "Xbox360Jeremy" --zwsp
+python doau_transfer.py foldername path/to/SaveMeta.xbx     # also checks the folder name
+```
+
+Tested (Xbox 360 backward compatibility):
+- Changing only the profile name inside `ups.dat` (leaving `SaveMeta.xbx` as is) makes the game report an error: the name inside `ups.dat` must match `Name=` in `SaveMeta.xbx`. In the profile checked, the name inside `ups.dat` has no trailing U+200B while `SaveMeta.xbx` does.
+- Renaming a DOA profile, changing all three places together (name inside `ups.dat`, `Name=` in `SaveMeta.xbx`, folder name from the algorithm above; `ups.dat` re-encrypted with the original MAC and re-signed with the target HD key), the game reads it (tested with the new KV).
+- With a folder name that does not match the save name (renamed `SaveMeta.xbx` and `ups.dat` placed in a folder with another name), the game still shows the new name in its profile list.
+
+Not tested: saving again after renaming; what the game does with two saves of the same name; loading or saving when the folder name does not match.
 
 **Notes**
 
