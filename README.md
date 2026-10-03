@@ -44,6 +44,7 @@ python doau_transfer.py convert ups.dat new_ups.dat --src-mac 00:00:00:00:00:00 
 
 - **Windows**：[`bin/DOA2U-Save-Transfer.exe`](bin/DOA2U-Save-Transfer.exe)，单文件带界面，支持高 DPI；中英文界面右下角切换，或用 `--en` / `--zh` 启动。
 - **所有系统**：[`doau_transfer.py`](doau_transfer.py)，只需 Python 3，验证和转换（需要已知 MAC）。
+- **所有系统，带界面**：`python doau_gui.py`（Python 3 + tkinter，无其他依赖；加 `--en` / `--zh` 选语言）。同样需要已知 MAC，不能搜 MAC。
 - **macOS / Linux 搜 MAC**：编译 `src/cli.c`。
 
 ### 使用方法（exe）
@@ -106,6 +107,7 @@ x86_64-w64-mingw32-gcc -O2 -municode -mwindows -static -o DOA2U-Save-Transfer.ex
 4. Copy the **whole** save folder into `UDATA/54430006/` on the target.
 
 Cross-platform: `python doau_transfer.py convert src out --src-mac .. --dst-mac .. --hdkey ..`. MAC search on macOS/Linux: build `src/cli.c`.
+Cross-platform GUI: `python doau_gui.py` (Python 3 + tkinter, `--en` / `--zh`). It needs a known MAC and cannot search for one.
 
 **Notes**
 
