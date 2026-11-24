@@ -21,7 +21,7 @@ enum { ID_SRC=100, ID_SRC_BR, ID_SRC_MAC, ID_SRC_OUI, ID_SRC_FIND,
 enum { S_GRP1, S_GRP2, S_L_SRC, S_L_SRCMAC, S_L_OUI, S_L_HD, S_L_DSTMAC, S_L_REF,
        S_BROWSE, S_FIND_SRC, S_FIND_REF, S_VERIFY, S_CONVERT, S_STOP, S_LANGBTN,
        S_INTRO, S_H1, S_H2, S_H3, S_H4, S_H5,
-       S_OPENFAIL, S_BADSIZE, S_BADMAC, S_BADHD, S_BADOUI, S_PROFILE,
+       S_OPENFAIL, S_BADSIZE, S_BADMAC, S_BADHD, S_BADOUI, S_PROFILE, S_FOLDER,
        S_SEARCHING, S_FOUND, S_STOPPED, S_NOTFOUND, S_SRCMACNAME, S_DSTMACNAME, S_NEEDOUI,
        S_VHEAD, S_VSRC, S_VSRCOK, S_VSRCBAD, S_VNOSRCMAC, S_VREF, S_VHDOK, S_VHDBAD, S_VDSTOK, S_VDSTBAD,
        S_CHEAD, S_CSRCBAD, S_CEMBDIFF, S_CANCEL, S_WRITEFAIL, S_SAVED, S_CDETAIL, S_CFOLDER, S_COUNT };
@@ -40,6 +40,7 @@ static const wchar_t *STR[2][S_COUNT] = {
  L"✗ 无法打开文件：%ls", L"✗ 文件大小 %ld 字节，不是 ups.dat（应为 %u 字节）",
  L"✗ %ls 格式不对，应为 12 位十六进制，如 00:50:F2:12:34:56", L"✗ HD Key 格式不对，应为 32 位十六进制",
  L"✗ MAC 前缀应为 6 位十六进制，如 00:50:F2", L"   档案名：%ls    内嵌 MAC：%hs",
+ L"   存档文件夹名（按档案名推算）：%hs",
  L"… 正在搜索 MAC %02X:%02X:%02X:xx:xx:xx（%d 线程，最多约 1677 万次，可能需要几分钟）",
  L"✓ 找到 MAC：%hs（已填入「%ls」）", L"■ 已停止",
  L"✗ 这个前缀下没有找到。可换一个前缀再试（默认 00:50:F2；也可试主机网络设置里显示的 MAC 的前 3 字节）",
@@ -65,6 +66,7 @@ static const wchar_t *STR[2][S_COUNT] = {
  L"✗ Cannot open file: %ls", L"✗ File is %ld bytes, not a ups.dat (should be %u bytes)",
  L"✗ %ls is invalid, expected 12 hex digits, e.g. 00:50:F2:12:34:56", L"✗ HD Key is invalid, expected 32 hex digits",
  L"✗ MAC prefix must be 6 hex digits, e.g. 00:50:F2", L"   Profile: %ls    Embedded MAC: %hs",
+ L"   Save folder name (calculated from the profile name): %hs",
  L"… Searching MAC %02X:%02X:%02X:xx:xx:xx (%d threads, up to 16.7M tries, may take a few minutes)",
  L"✓ Found MAC: %hs (filled into \"%ls\")", L"■ Stopped",
  L"✗ Not found under this prefix. Try another one (default 00:50:F2; or try the first 3 bytes of the MAC shown in the console's network settings)",
@@ -131,6 +133,10 @@ static void show_profile(const uint8_t *plain){
     name[i<16?i:16]=0;
     format_mac(plain+UPS_MAC_OFFSET,m);
     logw(T(S_PROFILE),name,m);
+    { uint16_t u[16]; char fn[13]; int k;
+      for(k=0;k<i&&k<16;k++) u[k]=(uint16_t)name[k];
+      save_folder_name(u,k,1,fn);               /* SaveMeta.xbx name = ups.dat name + U+200B */
+      logw(T(S_FOLDER),fn); }
 }
 static int browse(int id,int save){
     wchar_t f[MAX_PATH]; OPENFILENAMEW o; memset(&o,0,sizeof o);

@@ -9,6 +9,9 @@ consoles / xemu / Xbox 360 backward compatibility.
   python doau_transfer.py convert src_ups.dat out_ups.dat \
          --src-mac 00:50:F2:AA:BB:CC --dst-mac 00:25:AE:DD:EE:FF --hdkey TARGET_HDKEY
 
+  python doau_transfer.py foldername "Xbox360Jeremy" --zwsp
+  python doau_transfer.py foldername path/to/SaveMeta.xbx      # also checks the folder name
+
 Searching for an unknown MAC is far too slow in Python; use the Windows exe or
 the C command line tool (see README).
 """
@@ -153,6 +156,30 @@ def profile_info(p):
     name = raw.decode("utf-16-le", "replace").split("\x00")[0]
     return name, p[MAC_OFFSET:MAC_OFFSET + 6]
 
+# ------------------------------------------------------- save folder name
+# XAPI (XCreateSaveGame) derives the 12-hex-digit save folder name from the
+# save name. Read from DOA2.xbe (XDK 5849, function at 0x2b9d02):
+#     h = 0
+#     for each UTF-16 code unit c of the name:  h = (h * 0x10000 + c) mod (2**48 - 59)
+#     folder = "%012X" % h
+# The name is the text after "Name=" in SaveMeta.xbx, exactly as stored: DOA
+# profile names end with U+200B (zero-width space), which is part of the hash.
+FOLDER_MOD = (1 << 48) - 59
+
+def save_folder_name(name):
+    h = 0
+    b = name.encode("utf-16-le")
+    for i in range(0, len(b), 2):
+        h = (h * 0x10000 + int.from_bytes(b[i:i + 2], "little")) % FOLDER_MOD
+    return "%012X" % h
+
+def read_savemeta_name(path):
+    text = open(path, "rb").read().decode("utf-16")          # BOM FFFE
+    for line in text.split("\r\n"):
+        if line.startswith("Name="):
+            return line[5:]
+    sys.exit("✗ no Name= line in %s" % path)
+
 # ---------------------------------------------------------------- CLI
 def parse_hex(s, n, what):
     h = "".join(c for c in s if c not in ":- ")
@@ -201,6 +228,19 @@ def cmd_convert(a):
     print("✓ wrote %s  (profile %s, embedded MAC %s -> %s)" % (a.out, name, fmt(emb), fmt(dmac)))
     print("  Copy the WHOLE save folder (with SaveMeta.xbx / SaveImage.xbx) to UDATA/54430006/, not just ups.dat.")
 
+def cmd_foldername(a):
+    import os
+    if os.path.isfile(a.name):
+        name = read_savemeta_name(a.name)
+        calc = save_folder_name(name)
+        print("save name: %r" % name)
+        print("calculated folder: %s" % calc)
+        actual = os.path.basename(os.path.dirname(os.path.abspath(a.name)))
+        print("actual folder:     %s  %s" % (actual, "✓ match" if actual.upper() == calc else "✗ different"))
+    else:
+        name = a.name + ("\u200b" if a.zwsp else "")
+        print(save_folder_name(name))
+
 def main():
     ap = argparse.ArgumentParser(description="Dead or Alive Ultimate ups.dat transfer tool")
     sp = ap.add_subparsers(dest="cmd", required=True)
@@ -212,6 +252,10 @@ def main():
     c.add_argument("--src-mac", required=True); c.add_argument("--dst-mac", required=True)
     c.add_argument("--hdkey", required=True, help="target console XboxHDKey")
     c.set_defaults(fn=cmd_convert)
+    f = sp.add_parser("foldername", help="calculate the save folder name from a save name or a SaveMeta.xbx")
+    f.add_argument("name", help="save name, or path to a SaveMeta.xbx")
+    f.add_argument("--zwsp", action="store_true", help="append U+200B (DOA profile names end with it)")
+    f.set_defaults(fn=cmd_foldername)
     a = ap.parse_args(); a.fn(a)
 
 if __name__ == "__main__":
